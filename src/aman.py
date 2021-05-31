@@ -97,7 +97,7 @@ class Dataset(object):
         simArr = []
 
         data = df.values
-        dataOut = df[outcome].values
+        dataOut = df[self.outcome].values
 
         for i in range(m):
             simArr.append(calcSim(data,m,i,self.pol_ranges,self.pow_arr,w))
