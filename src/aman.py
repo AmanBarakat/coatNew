@@ -42,13 +42,18 @@ class Dataset(object):
     def loadData(self):
         df = pd.read_csv(f'data/{self.name}/{self.name}.data',sep=',',names=self.att_names)
         return df
-     
+    def appendToData(self,t):
+        self.df=self.df.append(t, ignore_index=True)
+    
+    def dropFromData(self,t):
+        self.df.drop(self.df.tail(1).index,inplace=True) 
+
  
     def fillSimMatrices(self):
         self.matrice_outcome = np.empty((self.df.shape[0], self.df.shape[0]))
         self.matrice_similarity = np.empty((self.df.shape[0], self.df.shape[0]))
-        w= np.ones(self.n_col)
-        # w=[0.625,1]
+        # w= np.ones(self.n_col)
+        w=[0.625,1]
 
         data = self.df.values
 
@@ -91,15 +96,15 @@ class Dataset(object):
             print(f'time of  coat calcul: {time.process_time() - startCoat}')
 
         return inversions
-    def calculateAug(self,df,minDiff):
-        m=df.shape[0]
+    def calculateAug(self,minDiff,w):
+        m=self.df.shape[0]-1
         outArr =[]
         simArr = []
-
-        data = df.values
-        dataOut = df[self.outcome].values
+        data = self.df.values
+        dataOut = self.df[self.outcome].values
 
         for i in range(m):
+            # print(i)
             simArr.append(calcSim(data,m,i,self.pol_ranges,self.pow_arr,w))
             if self.isClassification:
                 outArr.append(getOut(dataOut[m],dataOut[i]))
@@ -110,7 +115,7 @@ class Dataset(object):
         newInv=0
         while newInv <= minDiff:
             for x in range(m):
-                simVal =  calcSim(data,x,m,pol,p,w)
+                simVal =  calcSim(data,x,m,self.pol_ranges,self.pow_arr,w)
                 outVal =  poly(2,40282,dataOut[x],dataOut[m])
 
                 for y in range(m):
@@ -139,7 +144,7 @@ class Dataset(object):
         return newInv
 def getDataset(name):
     if name == 'autos':
-        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False)
+        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False,list(range(8000,9000,100)))
     elif name == 'user':
         ds=Dataset("user",[1,1,1,1,1],[2,2,2,2,2],['STG','SCG','STR','LPR','PEG','UNS'],'UNS',True)
     elif name == 'iris':
@@ -148,6 +153,7 @@ def getDataset(name):
         ds=Dataset('cars', [3,3,5,6,2,2],[2,2,2,2,2,2],['buying','maint','doors','persons','lug_boot','safety','class'],'class',True)
     return ds
 if __name__ == '__main__':
+    print(list(range(8000,9000,100)))
     name = sys.argv[1]
     if name=='tests':
         if len(sys.argv) > 2:
@@ -171,23 +177,24 @@ if __name__ == '__main__':
             ds=getDataset(sys.argv[2])
             compOpt=0
             classOpt=''
-            # c=ds.complexity(False)
+            c=ds.complexity(False)
             # print(c)
-            m=ds.shape[0]
+            w=[0.625,1]
+
+            m=ds.df.shape[0]
             minDiff=(m*m)+(2*m)
             for r in ds.potential_outcomes:
                 t = {'horsepower':116,'engine_size':110,'price':r}
-                bs = deepcopy(ds)
-                bs.df=bs.df.append(t, ignore_index=True)
-                v = bs.complexity(False)
-                aug=calculateAug(bs.df,minDiff)
+                ds.appendToData(t)
+                print(len(ds.matrice_outcome))
+                aug=ds.calculateAug(minDiff,w)
                 if aug<=minDiff:
                     minDiff=aug
                     priceOpt=r
-                print(f'price={r}, complexity={v}')
-            print(f'complexité optimale {compOpt} for class {priceOpt}')
-            c=ds.complexity(False)
-            print(c)
+                # print(f'price={r}, complexity={v}')
+                ds.dropFromData(t)
+            print(f'complexité optimale {minDiff} for class {priceOpt}')
+
     else:
         ds=getDataset(name)
 
