@@ -19,6 +19,11 @@ def calcSim(data,y,x,pol,p,w):
     for i in range(len(w)) :
         s+=poly(p[i], pol[i], data[x][i],data[y][i])*w[i]
     return s/sum(w)
+def calcOneSim(y,x,pol,p,w):
+    s=0
+    for i in range(len(w)) :
+        s+=poly(p[i], pol[i], y[i],x[i])*w[i]
+    return s/np.sum(w)
 
 def getOut(x,y):
     if x==y:
@@ -27,7 +32,7 @@ def getOut(x,y):
         return 0
 
 class Dataset(object):
-    def __init__(self,name,pol,powerArr,att_names,outcomeClass,isClassification,potential_outcomes):
+    def __init__(self,name,pol,powerArr,att_names,outcomeClass,isClassification,potential_outcomes,w=[]):
         self.name = name
         self.att_names=att_names
         self.df=self.loadData()
@@ -38,7 +43,8 @@ class Dataset(object):
         self.n_col = self.df.shape[1] - 1
         self.pol_ranges=pol
         self.pow_arr=powerArr
-
+        self.weights=w or np.ones(self.n_col)
+        print(self.weights)
     def loadData(self):
         df = pd.read_csv(f'data/{self.name}/{self.name}.data',sep=',',names=self.att_names)
         return df
@@ -53,7 +59,7 @@ class Dataset(object):
         self.matrice_outcome = np.empty((self.df.shape[0], self.df.shape[0]))
         self.matrice_similarity = np.empty((self.df.shape[0], self.df.shape[0]))
         # w= np.ones(self.n_col)
-        w=[0.625,1]
+        w=self.weights
 
         data = self.df.values
 
@@ -96,27 +102,31 @@ class Dataset(object):
             print(f'time of  coat calcul: {time.process_time() - startCoat}')
 
         return inversions
-    def calculateAug(self,minDiff,w):
-        m=self.df.shape[0]-1
+    def calculateAug(self,minDiff,simArr,t):
+        m=self.df.shape[0]
         outArr =[]
-        simArr = []
         data = self.df.values
         dataOut = self.df[self.outcome].values
-
+        # print(t)
         for i in range(m):
             # print(i)
-            simArr.append(calcSim(data,m,i,self.pol_ranges,self.pow_arr,w))
             if self.isClassification:
-                outArr.append(getOut(dataOut[m],dataOut[i]))
+                outArr.append(getOut(t[2],dataOut[i]))
             else:
-                outArr.append(poly(self.pow_arr[self.n_col],self.pol_ranges[self.n_col],dataOut[m],dataOut[i]))
-        simArr.append(1)
+                outArr.append(poly(self.pow_arr[self.n_col],self.pol_ranges[self.n_col],t[2],dataOut[i]))
+        # simArr.append(1)
         outArr.append(1)
+        # print(simArr)
+        # print(f'len of out arr is {len(outArr)}')
         newInv=0
         while newInv <= minDiff:
             for x in range(m):
-                simVal =  calcSim(data,x,m,self.pol_ranges,self.pow_arr,w)
-                outVal =  poly(2,40282,dataOut[x],dataOut[m])
+                # print(f'x is {x}')
+                # print(data[x][1])
+                # print(t[1])
+                simVal =  calcOneSim(data[x],t,self.pol_ranges,self.pow_arr,ds.weights)
+
+                outVal =  poly(2,40282,dataOut[x],t[2])
 
                 for y in range(m):
                     if self.matrice_outcome[x][y] == outVal:
@@ -128,7 +138,6 @@ class Dataset(object):
                         elif self.matrice_similarity[x][y] >= simVal:
                             newInv+=1
             for a, b in itertools.combinations(enumerate(outArr), 2):
-                    # print(f'a is {a}, b is {b}')
                     if a[1] == b[1]:
                         continue
                     else:
@@ -142,9 +151,41 @@ class Dataset(object):
                             newInv+=1
             break
         return newInv
+def predict(ds):
+    ds.fillSimMatrices()
+    startTime = time.process_time()
+    data=ds.df.values
+    dataOut=ds.df[ds.outcome].values
+    m=ds.df.shape[0]
+    minDiff=(m*m)+(2*m)
+    simArr=[]
+    t = [116,110,0]
+    for i in range(m):
+        simArr.append(calcOneSim(t,data[i],ds.pol_ranges,ds.pow_arr,ds.weights))
+    simSorted=np.argsort(simArr)
+    simArr.append(1)
+    sum=0
+    n=8
+    for i in range(n):
+        print(simSorted[i], dataOut[simSorted[i]])
+        sum+=dataOut[simSorted[i]]
+    priceAvg=sum/n 
+    print(f'Average price {priceAvg}')
+    pot=[priceAvg] + ds.potential_outcomes
+    # pot=ds.potential_outcomes
+    for r in pot:
+        t[2]=r
+        aug=ds.calculateAug(minDiff,simArr,t)
+        if aug<=minDiff:
+            minDiff=aug
+            priceOpt=r
+        # print(f'price={r}, complexity={minDiff}')
+    print(f'time of predict code: {time.process_time() - startTime}')
+
+    print(f'complexité optimale {minDiff} for class {priceOpt}')
 def getDataset(name):
     if name == 'autos':
-        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False,list(range(8000,9000,100)))
+        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False,list(range(8000,35000,100)),[0.2,0.8])
     elif name == 'user':
         ds=Dataset("user",[1,1,1,1,1],[2,2,2,2,2],['STG','SCG','STR','LPR','PEG','UNS'],'UNS',True)
     elif name == 'iris':
@@ -153,7 +194,7 @@ def getDataset(name):
         ds=Dataset('cars', [3,3,5,6,2,2],[2,2,2,2,2,2],['buying','maint','doors','persons','lug_boot','safety','class'],'class',True)
     return ds
 if __name__ == '__main__':
-    print(list(range(8000,9000,100)))
+    # print(list(range(8000,9000,100)))
     name = sys.argv[1]
     if name=='tests':
         if len(sys.argv) > 2:
@@ -175,25 +216,7 @@ if __name__ == '__main__':
     elif name=='predict':
         if len(sys.argv) > 2:
             ds=getDataset(sys.argv[2])
-            compOpt=0
-            classOpt=''
-            c=ds.complexity(False)
-            # print(c)
-            w=[0.625,1]
-
-            m=ds.df.shape[0]
-            minDiff=(m*m)+(2*m)
-            for r in ds.potential_outcomes:
-                t = {'horsepower':116,'engine_size':110,'price':r}
-                ds.appendToData(t)
-                print(len(ds.matrice_outcome))
-                aug=ds.calculateAug(minDiff,w)
-                if aug<=minDiff:
-                    minDiff=aug
-                    priceOpt=r
-                # print(f'price={r}, complexity={v}')
-                ds.dropFromData(t)
-            print(f'complexité optimale {minDiff} for class {priceOpt}')
+            predict(ds)
 
     else:
         ds=getDataset(name)
