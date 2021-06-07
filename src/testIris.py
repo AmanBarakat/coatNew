@@ -37,19 +37,19 @@ def calculateAug(df,minDiff):
     outArr.append(1)
     newInv=0
     while newInv <= minDiff:
-        for x in range(m):
-            simVal =  calcSim(data,x,m,pol,p,w)
-            outVal =  getOut(dataOut[x],dataOut[m])
-
-            for y in range(m):
-                if matrice_outcome[x][y] == outVal:
-                    continue
-                else:
-                    if  matrice_outcome[x][y] > outVal:
-                       if matrice_similarity[x][y] <= simVal: 
-                           newInv+=1
-                    elif matrice_similarity[x][y] >= simVal:
-                        newInv+=1
+        # for x in range(m):
+        #     simVal =  calcSim(data,x,m,pol,p,w)
+        #     outVal =  getOut(dataOut[x],dataOut[m])
+        #
+        #     for y in range(m):
+        #         if matrice_outcome[x][y] == outVal:
+        #             continue
+        #         else:
+        #             if  matrice_outcome[x][y] > outVal:
+        #                if matrice_similarity[x][y] <= simVal:
+        #                    newInv+=1
+        #             elif matrice_similarity[x][y] >= simVal:
+        #                 newInv+=1
         for a, b in itertools.combinations(enumerate(outArr), 2):
                 if a[1] == b[1]:
                     continue
@@ -106,7 +106,7 @@ def predictAcc(test,train,c,w):
                 classOpt=r
                 # print(f'True and now miDiff is {minDiff}')
 
-            train.drop(train.tail(1).index,inplace=True) 
+            train.drop(train.tail(1).index,inplace=True)
 
         # print(f'Classe optimale {classOpt} alors que originale est {originalClass}')
 
@@ -121,6 +121,7 @@ if __name__ == '__main__':
     x=[]
     y=[]
     e=[]
+    weights=[]
     ex=[]
     df=pd.read_csv("data/iris/iris.data",sep=',',header=None,names=['sepal_length','sepal_width','petal_length','petal_width','class'])
     column_names = ['sepal_length','sepal_width','petal_length','petal_width','class']
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     dfSetosa=df.loc[df['class']=='Iris-setosa']
     dfVirginica=df.loc[df['class']=='Iris-virginica']
     for i in range(0,50,5):
-        
+
         dfNew = pd.concat([dfNew, dfVersi.iloc[i:i+5]]).reset_index(drop=True)
         dfNew = pd.concat([dfNew, dfSetosa.iloc[i:i+5]]).reset_index(drop=True)
         dfNew = pd.concat([dfNew, dfVirginica.iloc[i:i+5]]).reset_index(drop=True)
@@ -142,13 +143,15 @@ if __name__ == '__main__':
     arrayComp=[]
     allValues={}
     # print(dfNew.head(20))
-    for l in range(500):
+    ww=[[1, 1, 1, 1], [11, 55, 77, 48], [33, 22, 52, 71], [41, 99, 27, 23], [57, 63, 83, 99], [94, 50, 56, 44], [19, 39, 8, 52], [17, 66, 4, 81]]
+    for l in range(8):
         arrayAcc=[]
         arrayComp=[]
-        if l==0:
-            w=[1,1,1,1]
-        else:
-            w= list(np.random.randint(1,100,4))
+        # if l==0:
+        #     w=[1,1,1,1]
+        # else:
+        #     w= list(np.random.randint(1,100,4))
+        w=ww[l]
         for i in range(10):
             dfTest  = dfNew.truncate(before=i*15, after=(i+1)*15 - 1)
             dfTrain = dfNew.drop(labels=range(i*15, (i+1)*15), axis=0)
@@ -167,7 +170,7 @@ if __name__ == '__main__':
                         matrice_outcome[i][j] =  getOut(data[i][col],data[j][col])
                     else:
                         matrice_similarity[i][j] = 1
-                        matrice_outcome[i][j] = 1           
+                        matrice_outcome[i][j] = 1
             c=compl(dfTrain,w)
             arrayAcc.append(predictAcc(dfTest,dfTrain,c,w))
             arrayComp.append(c)
@@ -176,27 +179,26 @@ if __name__ == '__main__':
         y.append(statistics.mean(arrayComp))
         e.append(statistics.stdev(arrayAcc))
         ex.append(statistics.stdev(arrayComp))
+        # weights.append(w)
 
-        data={
-            'weights':w,
-            'arrayAcc':arrayAcc,
-            'meanAcc':statistics.mean(arrayAcc),
-            'sdAcc':statistics.stdev(arrayAcc),
-            'meanComp':statistics.mean(arrayComp),
-            'sdComp':statistics.stdev(arrayComp)
-        }
-        allValues[l]=data
+        # data={
+        #     'weights':w,
+        #     'arrayAcc':arrayAcc,
+        #     'meanAcc':statistics.mean(arrayAcc),
+        #     'sdAcc':statistics.stdev(arrayAcc),
+        #     'meanComp':statistics.mean(arrayComp),
+        #     'sdComp':statistics.stdev(arrayComp)
+        # }
+        # allValues[l]=data
         # print(f'{l} done')
 
     print(allValues)
     dataReturn={
         'x':x,
-        'y':y,
-        'e':e,
-        'ex':ex
+        'y':y
     }
 print(f'time of whole code: {time.process_time() - start}')
-# f = open("myfile2.txt", "x") 
+# f = open("myfile2.txt", "x")
 print(dataReturn)
 
 plt.xlim(0.5,1)

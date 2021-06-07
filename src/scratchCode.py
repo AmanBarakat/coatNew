@@ -42,7 +42,7 @@ class Dataset(object):
     def loadData(self):
         df = pd.read_csv(f'data/{self.name}/{self.name}.data',sep=',',names=self.att_names)
         return df
-     
+
 
     def fillSimMatrices(self):
         w= np.ones(self.n_col)
@@ -95,26 +95,31 @@ def getDataset(name):
     return ds
 if __name__ == '__main__':
     name = sys.argv[1]
-    if name=='tests':
-        if len(sys.argv) > 2:
-            dataNames=[sys.argv[2]]
-        else:
-            dataNames=['autos','user','iris']
-        for name in dataNames:
-            ds=getDataset(name)
-            durations=[]
-            for i in range(10):
-                startTime = time.process_time()
-                c=ds.complexity(False)
-                durations.append(time.process_time() - startTime)
-            meanTime=np.mean(durations)
-            stdTime=np.std(durations)
-            print(f'{name} : mean = {meanTime} , std = {stdTime}')
-
-
-
-    else:
-        ds=getDataset(name)
-
-        c=ds.complexity()
-        print(c)
+    if name=='moyn':
+        x= [0.9533333333333334, 0.96, 0.96, 0.8933333333333333, 0.96, 0.8933333333333333, 0.96, 0.9533333333333334]
+        y= [0.9400000000000001, 0.96, 0.96, 0.8733333333333333, 0.96, 0.9066666666666667, 0.96, 0.9533333333333334]
+        print(np.mean(x))
+        print(np.mean(y))
+    # if name=='tests':
+    #     if len(sys.argv) > 2:
+    #         dataNames=[sys.argv[2]]
+    #     else:
+    #         dataNames=['autos','user','iris']
+    #     for name in dataNames:
+    #         ds=getDataset(name)
+    #         durations=[]
+    #         for i in range(10):
+    #             startTime = time.process_time()
+    #             c=ds.complexity(False)
+    #             durations.append(time.process_time() - startTime)
+    #         meanTime=np.mean(durations)
+    #         stdTime=np.std(durations)
+    #         print(f'{name} : mean = {meanTime} , std = {stdTime}')
+    #
+    #
+    #
+    # else:
+    #     ds=getDataset(name)
+    #
+    #     c=ds.complexity()
+    #     print(c)

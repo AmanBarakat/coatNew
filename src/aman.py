@@ -50,11 +50,11 @@ class Dataset(object):
         return df
     def appendToData(self,t):
         self.df=self.df.append(t, ignore_index=True)
-    
-    def dropFromData(self,t):
-        self.df.drop(self.df.tail(1).index,inplace=True) 
 
- 
+    def dropFromData(self,t):
+        self.df.drop(self.df.tail(1).index,inplace=True)
+
+
     def fillSimMatrices(self):
         self.matrice_outcome = np.empty((self.df.shape[0], self.df.shape[0]))
         self.matrice_similarity = np.empty((self.df.shape[0], self.df.shape[0]))
@@ -120,23 +120,20 @@ class Dataset(object):
         # print(f'len of out arr is {len(outArr)}')
         newInv=0
         while newInv <= minDiff:
-            for x in range(m):
-                # print(f'x is {x}')
-                # print(data[x][1])
-                # print(t[1])
-                simVal =  calcOneSim(data[x],t,self.pol_ranges,self.pow_arr,ds.weights)
-
-                outVal =  poly(2,40282,dataOut[x],t[2])
-
-                for y in range(m):
-                    if self.matrice_outcome[x][y] == outVal:
-                        continue
-                    else:
-                        if  self.matrice_outcome[x][y] > outVal:
-                            if self.matrice_similarity[x][y] <= simVal: 
-                                newInv+=1
-                        elif self.matrice_similarity[x][y] >= simVal:
-                            newInv+=1
+            # for x in range(m):
+            #     simVal =  calcOneSim(data[x],t,self.pol_ranges,self.pow_arr,ds.weights)
+            #
+            #     outVal =  poly(2,40282,dataOut[x],t[2])
+            #
+            #     for y in range(m):
+            #         if self.matrice_outcome[x][y] == outVal:
+            #             continue
+            #         else:
+            #             if  self.matrice_outcome[x][y] > outVal:
+            #                 if self.matrice_similarity[x][y] <= simVal:
+            #                     newInv+=1
+            #             elif self.matrice_similarity[x][y] >= simVal:
+            #                 newInv+=1
             for a, b in itertools.combinations(enumerate(outArr), 2):
                     if a[1] == b[1]:
                         continue
@@ -159,7 +156,7 @@ def predict(ds):
     m=ds.df.shape[0]
     minDiff=(m*m)+(2*m)
     simArr=[]
-    t = [116,110,0]
+    t = [73,110,0]
     for i in range(m):
         simArr.append(calcOneSim(t,data[i],ds.pol_ranges,ds.pow_arr,ds.weights))
     simSorted=np.argsort(simArr)
@@ -169,7 +166,7 @@ def predict(ds):
     for i in range(n):
         print(simSorted[i], dataOut[simSorted[i]])
         sum+=dataOut[simSorted[i]]
-    priceAvg=sum/n 
+    priceAvg=sum/n
     print(f'Average price {priceAvg}')
     pot=[priceAvg] + ds.potential_outcomes
     # pot=ds.potential_outcomes
@@ -185,7 +182,7 @@ def predict(ds):
     print(f'complexité optimale {minDiff} for class {priceOpt}')
 def getDataset(name):
     if name == 'autos':
-        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False,list(range(8000,35000,100)),[0.2,0.8])
+        ds=Dataset('autos',[240,265,40282],[2,2,2],["horsepower","engine_size","price"],'price',False,list(range(6000,35000,100)),[0.2,0.8])
     elif name == 'user':
         ds=Dataset("user",[1,1,1,1,1],[2,2,2,2,2],['STG','SCG','STR','LPR','PEG','UNS'],'UNS',True)
     elif name == 'iris':
