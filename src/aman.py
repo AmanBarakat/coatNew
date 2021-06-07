@@ -156,7 +156,7 @@ def predict(ds):
     m=ds.df.shape[0]
     minDiff=(m*m)+(2*m)
     simArr=[]
-    t = [73,110,0]
+    t = [102,109,0]
     for i in range(m):
         simArr.append(calcOneSim(t,data[i],ds.pol_ranges,ds.pow_arr,ds.weights))
     simSorted=np.argsort(simArr)
