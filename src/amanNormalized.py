@@ -159,7 +159,7 @@ if __name__ == '__main__':
                     minDiff=v-c
                     compOpt=v
                     priceOpt=r
-                print(f'price={r}, complexity={v}')
+                # print(f'price={r}, complexity={v}')
 
             print(f'complexité optimale {compOpt} for price {priceOpt}')
     elif name=='weights':

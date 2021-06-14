@@ -160,12 +160,14 @@ def predict(ds):
     for i in range(m):
         simArr.append(calcOneSim(t,data[i],ds.pol_ranges,ds.pow_arr,ds.weights))
     simSorted=np.argsort(simArr)
+    n=8
+    simSortedDesc=simSorted[::-1]
     simArr.append(1)
     sum=0
-    n=8
+    
     for i in range(n):
-        print(simSorted[i], dataOut[simSorted[i]])
-        sum+=dataOut[simSorted[i]]
+        print(simSortedDesc[i], dataOut[simSortedDesc[i]])
+        sum+=dataOut[simSortedDesc[i]]
     priceAvg=sum/n
     print(f'Average price {priceAvg}')
     pot=[priceAvg] + ds.potential_outcomes
