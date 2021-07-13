@@ -29,35 +29,28 @@ def getOut(x,y):
         return 0
         
 def knn(simArr,train,n):
-    dataOut = train['class'].values
+    dataOut = train['diagnosis'].values
 
     simSorted=np.argsort(simArr)
-    # print(simArr)
-    sumVersicolor=0
-    sumVirginica=0
-    sumSetosa=0
-    # print(simSorted)
+    sum2=0
+    sum4=0
     simSortedDesc=simSorted[::-1][:n]
     for i in range(n):
         # print(f'{i} nearest neighbor is {dataOut[simSortedDesc[i]]}')
-        if dataOut[simSortedDesc[i]]=='Iris-versicolor':
-            sumVersicolor+=1
-        elif dataOut[simSortedDesc[i]]=='Iris-virginica':
-            sumVirginica+=1
-        elif dataOut[simSortedDesc[i]]=='Iris-setosa':
-            sumSetosa+=1
-    maxClass=max(sumVersicolor,sumVirginica,sumSetosa)
-    if maxClass==sumVersicolor:
-        return 'Iris-versicolor'
-    elif maxClass==sumVirginica:
-        return 'Iris-virginica'
-    else:
-        return 'Iris-setosa'
-def calculateComp(df,minDiff,simArr,t):
+        if dataOut[simSortedDesc[i]]==2:
+            sum2+=1
+        elif dataOut[simSortedDesc[i]]==4:
+            sum4+=1
+    maxClass=max(sum2,sum4)
+    if maxClass==sum2:
+        return 2
+    elif maxClass==sum4:
+        return 4
+def calculateAug(df,minDiff,simArr,t):
     col=df.shape[1] - 1
     outArr =[]
     data = df.values
-    dataOut = df['class'].values
+    dataOut = df['diagnosis'].values
     for i in range(m):
         outArr.append(getOut(t[col],dataOut[i]))
     outArr.append(1)
@@ -118,11 +111,10 @@ def predictAcc(test,train,c,w):
     for index, row in test.iterrows():
         minDiff = (m*m) + (2*m)
 
-        originalClass=row['class']
-        # print(f'Classe originale {originalClass}')
+        originalClass=row['diagnosis']
         for r in potential_outcomes:
             rowCopy=row
-            rowCopy['class']=r
+            rowCopy['diagnosis']=r
             t=rowCopy.values
 
 
@@ -130,11 +122,13 @@ def predictAcc(test,train,c,w):
 
             data = train.values
 
+
+            for i in range(m):        
+                simArr.append(calcOneSim(t,data[i],pol,p,w))
             # classOpt=knn(simArr,train,5)
             simArr.append(1)
-            bs = deepcopy(ds)
-            bs.df=bs.df.append(t, ignore_index=True)
-            aug=compl(train,minDiff,simArr,t)
+
+            aug=calculateAug(train,minDiff,simArr,t)
 
             if aug<=minDiff:
                 minDiff=aug
@@ -149,12 +143,26 @@ if __name__ == '__main__':
     start = time.process_time()
  
     weights, accuracies, complexities,  accuracySd,complexitiesSd,timePreds,timePredsSd=([] for i in range(7))
-
-    df=pd.read_csv("data/iris/iris.data",sep=',',header=None,names=['sepal_length','sepal_width','petal_length','petal_width','class'])
-    column_names = ['sepal_length','sepal_width','petal_length','petal_width','class']
-
+    
+    df=pd.read_csv("data/breast-w/breast-cancer-wisconsin.data",sep=',',header=None,names=['id','clump_thickness','uniformity_cell_size','uniformity_cell_shape','marginal_adhesion','single_epithelial_cell_size','bare_nuclei','bland_chromatin','normal_nucleoli','mitoses','diagnosis'])
+  
     pol=[3.6,2.4,5.9,2.4]
     p=[2,2,2,2]
+
+    df = df.sample(frac=1).reset_index(drop=True)
+
+    dfNew=df.drop(columns=['id'])
+    lengthDf=dfNew.shape[1] - 1
+    # p=np.full((1, lengthDf), 2)
+    p=np.empty(lengthDf)
+    pol=np.empty(lengthDf)
+    i=0
+    for i in range(0,lengthDf):
+
+        maxVal = dfNew[dfNew.columns[i]].astype(str).map(len).max()
+        pol[i]=maxVal
+
+    p.fill(2)
 
     arrayComp=[]
     allValues={}
@@ -163,28 +171,62 @@ if __name__ == '__main__':
         arrayAcc=[]
         arrayComp=[]
         arrayTimePreds=[]
-        w=[1,1,1,1]
+        if l==0:
+            w=[1,1,1,1]
+        else:
+            w= list(np.random.randint(1,100,4))
+        for i in range(10):
+            dfTest  = dfNew.truncate(before=i*69, after=(i+1)*69 - 1)
+            dfTrain = dfNew.drop(labels=range(i*69, (i+1)*69), axis=0)
 
-        dfTest  = df.truncate(before=i*15, after=(i+1)*15 - 1)
-        dfTrain = df.drop(labels=range(i*15, (i+1)*15), axis=0)
+            m= dfTrain.shape[0]
+            data = dfTrain.values
+            dataOut= dfTrain['diagnosis']
+            col=len(w)
+            matrice_outcome = np.empty((m, m))
+            matrice_similarity = np.empty((m, m))
 
-        m= dfTrain.shape[0]
-        data = dfTrain.values
-        dataOut= dfTrain['class']
-        col=len(w)
-        matrice_outcome = np.empty((m, m))
-        matrice_similarity = np.empty((m, m))
+            for i in range(m):
+                for j in range(m):
+                    if i != j:
+                        matrice_similarity[i][j] =  calcSim(data,i,j,pol,p,w)
+                        matrice_outcome[i][j] =  getOut(data[i][col],data[j][col])
+                    else:
+                        matrice_similarity[i][j] = 1
+                        matrice_outcome[i][j] = 1           
+            c=compl(dfTrain,w)
+            startTime = time.process_time()
+            acc=predictAcc(dfTest,dfTrain,c,w)
+            timePred=time.process_time() - startTime
+            arrayAcc.append(acc)
+            arrayComp.append(c)
+            arrayTimePreds.append(timePred)
+        
+        weights.append(w)
+        accuracies.append(statistics.mean(arrayAcc))
+        complexities.append(statistics.mean(arrayComp))
+        accuracySd.append(statistics.stdev(arrayAcc))
+        complexitiesSd.append(statistics.stdev(arrayComp))
+        timePreds.append(statistics.mean(arrayTimePreds))
+        timePredsSd.append(statistics.mean(arrayTimePreds))
 
-        for i in range(m):
-            for j in range(m):
-                if i != j:
-                    matrice_similarity[i][j] =  calcSim(data,i,j,pol,p,w)
-                    matrice_outcome[i][j] =  getOut(data[i][col],data[j][col])
-                else:
-                    matrice_similarity[i][j] = 1
-                    matrice_outcome[i][j] = 1           
-        c=compl(dfTrain,w)
-        startTime = time.process_time()
-        acc=predictAcc(dfTest,dfTrain,c,w)
-        timePred=time.process_time() - startTime
 
+
+    dataReturn={
+        'accuracies':accuracies,
+        'complexities':complexities,
+        'accuracySd':accuracySd,
+        'complexitiesSd':complexitiesSd,
+        'timePreds':timePreds,
+        'timePredsSd':timePredsSd
+    }
+# print(f'time of whole code: {time.process_time() - start}')
+# f = open("myfile2.txt", "x")
+print(weights) 
+print(dataReturn)
+# print(goodWeights)
+
+# plt.xlim(0.5,1)
+
+# plt.errorbar(x, y, yerr=ex, xerr=e, fmt='o')
+# plt.show()

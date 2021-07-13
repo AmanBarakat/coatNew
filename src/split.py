@@ -20,47 +20,50 @@ c='deepskyblue'
 euclc='red'
 dotsize=45
 
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
+fig = plt.figure()
+ax = fig.add_subplot(111)
 
-
+labelPad=40
 
 # coat 
-# x=data['complexities']
-# y=data['accuracySd']
-# xer=data['complexitiesSd']
+x=data['complexities']
+y=data['accuracies']
+xer=data['complexitiesSd']
+yer=data['accuracySd']
 
-# # plt.title("Variation de la précision de CoAT en fonction de la complexité",pad=20)
-# plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-# plt.ylabel("Ecart type de la précision",labelpad=20,fontsize=fs)
-# plt.ylim(0,0.125)
+# plt.title("Variation de la précision de CoAT en fonction de la complexité",pad=20)
+plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+plt.ylabel("Précision",labelpad=labelPad,fontsize=fs)
+plt.ylim(0.7,1)
 
 
 #coat vs knn
 # x=data['accuracies']
 # y=data['accuraciesKnn']
-# plt.title("KNN vs CoAT Accuracy for same weights",pad=20)
-# plt.xlabel("CoAT Accuracy",labelpad=20,fontsize=fs)
-# plt.ylabel("KNN Accuracy",labelpad=20,fontsize=fs)
-# plt.ylim(0.03,0.12)
-
+# # plt.title("Acc moyen de KNN en fonction de Acc de prédiction moyen de CoAT ",pad=20)
+# plt.xlabel("Précision CoAT",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Précision KNN",labelpad=labelPad,fontsize=fs)
+# xer=data['accuracySd']
+# yer=data['accuracySdKnn']
+# plt.ylim(0.75,1)
+# plt.xlim(0.75,1)
 
 # coat sd
 # x=data['complexities']
 # y=data['accuracySd']
-# plt.title("Ecart type de l'accuracy de CoAT en fonction de la complexité",pad=20)
-# plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-# plt.ylabel("Sd Accuracy",labelpad=20,fontsize=fs)
+# # plt.title("Ecart type de la précision de CoAT en fonction de la complexité",pad=20)
+# plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Ecart-type de la précision",labelpad=labelPad,fontsize=fs)
 
 
 
 #knn 
-x=data['complexitiesKnn']
-y=data['accuraciesKnn']
-yer=data['accuracySdKnn']
-# plt.title("Ecart type de l'accuracy de KNN en fonction de la complexité ",pad=20)
-plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-plt.ylabel("Précision moyenne de KNN",labelpad=20,fontsize=fs)
+# x=data['complexitiesKnn']
+# y=data['accuraciesKnn']
+# yer=data['accuracySdKnn']
+# # plt.title("Ecart type de l'accuracy de KNN en fonction de la complexité ",pad=20)
+# plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Précision moyenne de KNN",labelpad=labelPad,fontsize=fs)
 
 
 
@@ -69,8 +72,8 @@ plt.ylabel("Précision moyenne de KNN",labelpad=20,fontsize=fs)
 # x=data['complexitiesKnn']
 # y=data['accuracySdKnn']
 # plt.title("Ecart type de l'accuracy de KNN en fonction de la complexité ",pad=20)
-# plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-# plt.ylabel("Sd Accuracy",labelpad=20,fontsize=fs)
+# plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Sd Accuracy",labelpad=labelPad,fontsize=fs)
 
 
 #coat vs knn sd
@@ -80,25 +83,25 @@ plt.ylabel("Précision moyenne de KNN",labelpad=20,fontsize=fs)
 # plt.ylim(0.03,0.11)
 # plt.xlim(0.03,0.11)
 # # plt.title("Ecart type de l'accuracy de KNN en fonction de l'acc de CoAT ",pad=20)
-# plt.xlabel("Ecart type de la précision avec CoAT",labelpad=20,fontsize=fs)
+# plt.xlabel("Ecart type de la précision avec CoAT",labelpad=labelPad,fontsize=fs)
 
-# plt.ylabel("Ecart type de la précision avec KNN",labelpad=20,fontsize=fs)
+# plt.ylabel("Ecart type de la précision avec KNN",labelpad=labelPad,fontsize=fs)
 
 #CoAT time
 # x=data['complexities']
 # y=data['timePreds']
 # yer=data['timePredsSd']
 # plt.title("Temps de prédiction moyen de CoAT en fonction de la complexité ",pad=20)
-# plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-# plt.ylabel("Temps",labelpad=20,fontsize=fs)
+# plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Temps",labelpad=labelPad,fontsize=fs)
 
 #Knn time
 # x=data['complexitiesKnn']
 # y=data['timePredsKnn']
 # yer=data['timePredsSdKnn']
 # plt.title("Temps de prédiction moyen de KNN en fonction de la complexité ",pad=20)
-# plt.xlabel("Complexité",labelpad=20,fontsize=fs)
-# plt.ylabel("Temps",labelpad=20,fontsize=fs)
+# plt.xlabel("Complexité",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Temps",labelpad=labelPad,fontsize=fs)
 
 
 
@@ -108,8 +111,8 @@ plt.ylabel("Précision moyenne de KNN",labelpad=20,fontsize=fs)
 # x=data['accuracies']
 # y=data['accuraciesKnn']
 # # plt.title("Acc moyen de KNN en fonction de Acc de prédiction moyen de CoAT ",pad=20)
-# plt.xlabel("Précision CoAT",labelpad=20)
-# plt.ylabel("Précision KNN",labelpad=20)
+# plt.xlabel("Précision CoAT",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Précision KNN",labelpad=labelPad,fontsize=fs)
 # xer=data['accuracySd']
 # yer=data['accuracySdKnn']
 # plt.ylim(0.75,1)
@@ -119,18 +122,19 @@ plt.ylabel("Précision moyenne de KNN",labelpad=20,fontsize=fs)
 # x=data['timePreds']
 # y=data['timePredsKnn']
 # plt.title("Temps de prédiction moyen de KNN en fonction du tmps de prédiction moyen de CoAT ",pad=20)
-# plt.xlabel("Temps CoAT",labelpad=20)
-# plt.ylabel("Temps KNN",labelpad=20)
+# plt.xlabel("Temps CoAT",labelpad=labelPad,fontsize=fs)
+# plt.ylabel("Temps KNN",labelpad=labelPad,fontsize=fs)
 
 # # plt.ylim(0,2.2)
 # # plt.xlim(0,2.2)
 
-plt.errorbar(x, y, yerr=yer,fmt='o',c=c,ecolor=ec,capsize=5,capthick=0.5,elinewidth = 0.5)
-
-# plt.errorbar(x, y, fmt='o')
+plt.errorbar(x, y, yerr=yer, xerr=xer, fmt='o',c=c,ecolor=ec,elinewidth = 0.5)
+# plt.errorbar(x, y, yerr=yer,  fmt='o',c=c,ecolor=ec,elinewidth = 0.5)
+# plt.errorbar(x, y, fmt='o',c=c)
 
 plt.scatter(x[0] , y[0], s=dotsize, c=euclc, alpha=1,zorder=20)
 plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)),c='seagreen')
-
+ax.tick_params(axis = 'both', which = 'major', labelsize = 12)
+ax.tick_params(axis = 'both', which = 'minor', labelsize = 12)
 # ax.set_aspect('equal', adjustable='box')
 plt.show()
