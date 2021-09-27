@@ -229,7 +229,7 @@ if __name__ == '__main__':
 # f = open("myfile2.txt", "x")
 print(weights) 
 print(dataReturn)
-# print(goodWeights)
+
 
 # plt.xlim(0.5,1)
 
